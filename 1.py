@@ -10,7 +10,7 @@ import os
 
 _DSN = os.getenv("DATABASE_URL")
 if not _DSN:
-    host = os.getenv("PGHOST", "122.163.176.18")
+    host = os.getenv("PGHOST", "localhost")
     port = os.getenv("PGPORT", "5432")
     db   = os.getenv("PGDATABASE", "goldtrader")
     user = os.getenv("PGUSER", "postgres")
