@@ -12,7 +12,7 @@ _DSN = os.getenv("DATABASE_URL")
 if not _DSN:
     host = os.getenv("PGHOST", "localhost")
     port = os.getenv("PGPORT", "5432")
-    db   = os.getenv("PGDATABASE", "goldtrader")
+    db   = os.getenv("PGDATABASE", "postgres")
     user = os.getenv("PGUSER", "postgres")
     pwd  = os.getenv("PGPASSWORD", "@Gtm025@")
 
@@ -4730,22 +4730,29 @@ elif page in ("Stock Master", "📦 Stock Master"):
         </style>
     """, unsafe_allow_html=True)
 
-    # --- Ensure DB schema ---
+    # --- Ensure DB schema (idempotent) ---
     conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("PRAGMA table_info(stocks)")
-    cols = [r[1] for r in cur.fetchall()]
-    if "total_value" not in cols:
-        cur.execute("ALTER TABLE stocks ADD COLUMN total_value REAL DEFAULT 0")
-    if "avg_rate" not in cols:
-        cur.execute("ALTER TABLE stocks ADD COLUMN avg_rate REAL DEFAULT 0")
-    cur.execute("PRAGMA table_info(stock_transactions)")
-    tx_cols = [r[1] for r in cur.fetchall()]
-    if "rate" not in tx_cols:
-        cur.execute("ALTER TABLE stock_transactions ADD COLUMN rate REAL")
-    if "value" not in tx_cols:
-        cur.execute("ALTER TABLE stock_transactions ADD COLUMN value REAL")
-    conn.commit(); conn.close()
+    try:
+        # Use the shared helper already present in the file (ensure_columns)
+        # Keeps schema updates safe across SQLite and PostgreSQL compatibility shim.
+        ensure_columns(conn, "stocks", {
+            "total_value": "REAL DEFAULT 0",
+            "avg_rate": "REAL DEFAULT 0",
+            # keep created_at if you want it ensured here too (some earlier init_db call already adds it)
+            # "created_at": "TEXT"
+        })
+
+        ensure_columns(conn, "stock_transactions", {
+            "rate": "REAL",
+            "value": "REAL"
+        })
+    finally:
+        try:
+            conn.commit()
+        except Exception:
+            pass
+        conn.close()
+
 
     # --- Fetch Stock Master ---
     stocks_df = fetch_stocks_df()
