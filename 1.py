@@ -10,11 +10,11 @@ import os
 
 _DSN = os.getenv("DATABASE_URL")
 if not _DSN:
-    host = os.getenv("PGHOST", "localhost")
+    host = os.getenv("PGHOST", "dpg-d45r83u3jp1c73do0kr0-a")
     port = os.getenv("PGPORT", "5432")
-    db   = os.getenv("PGDATABASE", "postgres")
-    user = os.getenv("PGUSER", "postgres")
-    pwd  = os.getenv("PGPASSWORD", "@Gtm025@")
+    db   = os.getenv("PGDATABASE", "goldtrader")
+    user = os.getenv("PGUSER", "goldtrader")
+    pwd  = os.getenv("PGPASSWORD", "pyb4k2SjECeagjs6Alhr1edb3B54YIOc")
 
     # URL-encode user and password
     user_enc = quote_plus(user)
